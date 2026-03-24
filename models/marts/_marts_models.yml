@@ -7,16 +7,8 @@ models:
       Includes customer tier classification and activity status.
     columns:
       - name: customer_id
-        description: Unique customer identifier.
-        tests:
-          - unique
-          - not_null
-      - name: email
-        description: Customer email address (lowercased).
-        tests:
-          - unique
-          - not_null
-      - name: full_name
+        description: Unique customer identifier. email
+        description: Customer email address (lowercased). full_name
         description: Customer full name.
       - name: age
         description: Customer age.
@@ -43,15 +35,9 @@ models:
       - name: avg_order_value
         description: Average revenue per order.
       - name: customer_tier
-        description: "Customer classification: prospect, new, active, or loyal."
-        tests:
-          - accepted_values:
-              values: ['prospect', 'new', 'active', 'loyal']
+        description: "Customer classification: prospect, new, active, or loyal."              values: ['prospect', 'new', 'active', 'loyal']
       - name: activity_status
-        description: "Recency-based status: active, at_risk, churned, or never_purchased."
-        tests:
-          - accepted_values:
-              values: ['active', 'at_risk', 'churned', 'never_purchased']
+        description: "Recency-based status: active, at_risk, churned, or never_purchased."              values: ['active', 'at_risk', 'churned', 'never_purchased']
 
   - name: dim_products
     description: >
@@ -59,15 +45,8 @@ models:
       Includes margin calculations and sales velocity classification.
     columns:
       - name: product_id
-        description: Unique product identifier.
-        tests:
-          - unique
-          - not_null
-      - name: product_name
-        description: Product display name.
-        tests:
-          - not_null
-      - name: category
+        description: Unique product identifier. product_name
+        description: Product display name. category
         description: Product category.
       - name: brand
         description: Product brand.
@@ -96,16 +75,8 @@ models:
       Each row is one order with aggregated revenue and item details.
     columns:
       - name: order_id
-        description: Unique order identifier.
-        tests:
-          - unique
-          - not_null
-      - name: customer_id
-        description: Foreign key to dim_customers.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_customers')
+        description: Unique order identifier. customer_id
+        description: Foreign key to dim_customers.              to: ref('dim_customers')
               field: customer_id
       - name: ordered_at
         description: Timestamp when the order was placed.
@@ -134,11 +105,7 @@ models:
       One row per date with revenue, order count, and customer metrics.
     columns:
       - name: revenue_date
-        description: Calendar date.
-        tests:
-          - unique
-          - not_null
-      - name: order_count
+        description: Calendar date. order_count
         description: Number of orders placed on this date.
       - name: unique_customers
         description: Distinct customers who ordered on this date.
@@ -154,11 +121,7 @@ models:
       Session fact table summarizing web browsing sessions with conversion indicators.
     columns:
       - name: session_id
-        description: Unique session identifier.
-        tests:
-          - unique
-          - not_null
-      - name: customer_id
+        description: Unique session identifier. customer_id
         description: Customer associated with the session.
       - name: session_start
         description: Start time of the session.

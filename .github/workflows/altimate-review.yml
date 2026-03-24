@@ -27,7 +27,9 @@ jobs:
         run: pip install dbt-core dbt-bigquery
 
       - name: Write BigQuery keyfile
-        run: echo '${{ secrets.BIGQUERY_CREDENTIALS }}' > /tmp/bq-keyfile.json
+        env:
+          BQ_CREDS: ${{ secrets.BIGQUERY_CREDENTIALS }}
+        run: printenv BQ_CREDS > /tmp/bq-keyfile.json
 
       - name: Install dbt packages
         run: dbt deps --profiles-dir .
@@ -46,3 +48,7 @@ jobs:
           severity_threshold: info
           impact_analysis: 'true'
           manifest_path: target/manifest.json
+
+      - name: Cleanup credentials
+        if: always()
+        run: rm -f /tmp/bq-keyfile.json

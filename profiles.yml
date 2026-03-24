@@ -3,17 +3,17 @@ bigquery_demo:
   outputs:
     dev:
       type: bigquery
-      method: service-account-json
+      method: service-account
       project: diesel-command-384802
       dataset: dbt_demo
       threads: 4
       timeout_seconds: 300
-      keyfile_json: "{{ env_var('BIGQUERY_KEYFILE_JSON', '{}') }}"
+      keyfile: "{{ env_var('BIGQUERY_KEYFILE_PATH', '/tmp/bq-keyfile.json') }}"
     ci:
       type: bigquery
-      method: service-account-json
+      method: service-account
       project: diesel-command-384802
       dataset: dbt_demo_ci
       threads: 4
       timeout_seconds: 300
-      keyfile_json: "{{ env_var('BIGQUERY_KEYFILE_JSON', '{}') }}"
+      keyfile: "{{ env_var('BIGQUERY_KEYFILE_PATH', '/tmp/bq-keyfile.json') }}"

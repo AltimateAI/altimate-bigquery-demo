@@ -1,3 +1,11 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='order_id',
+        incremental_strategy='merge'
+    )
+}}
+
 with products as (
 
     select * from {{ ref('stg_products') }}
@@ -46,3 +54,7 @@ final as (
 )
 
 select * from final
+
+{% if is_incremental() %}
+where revenue_date > (select max(revenue_date) from {{ this }})
+{% endif %}

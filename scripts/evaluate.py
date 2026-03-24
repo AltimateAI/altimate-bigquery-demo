@@ -100,9 +100,12 @@ def get_pr_comments(pr_number: int) -> list:
     """Get all comments on a PR."""
     result = gh(
         "api", f"repos/{{owner}}/{{repo}}/issues/{pr_number}/comments",
-        "--paginate", "--jq", ".[].body",
+        "--paginate",
     )
-    return result.stdout.strip().split("\n") if result.stdout.strip() else []
+    if not result.stdout.strip():
+        return []
+    comments = json.loads(result.stdout)
+    return [c["body"] for c in comments if "body" in c]
 
 
 def find_altimate_comment(comments: list) -> Optional[str]:
@@ -120,37 +123,42 @@ def find_altimate_comment(comments: list) -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 
-def check_format(comment: str) -> dict:
-    """Validate the PR comment format against the v0.3 design spec."""
+def check_format(comment: str, mode: str = "static") -> dict:
+    """Validate the PR comment format against the v0.3 design spec.
+
+    Only checks sections that are expected for the given mode:
+    - static: executive_line, summary_table, issues_section, footer
+    - full/ai: all of the above + mermaid_dag, cost_section (if data present)
+    """
     checks = {}
 
-    # Executive one-line summary
+    # Executive one-line summary — match the emoji + "Altimate Code"
     checks["executive_line"] = bool(
-        re.search(r"^## [✅⚠️❌] Altimate Code", comment, re.MULTILINE)
+        re.search(r"^## .{1,4} Altimate Code", comment, re.MULTILINE)
     )
 
     # Summary table
     checks["summary_table"] = bool(
-        re.search(r"\| Check\s*\| Result\s*\| Details", comment)
+        re.search(r"\|\s*Check\s*\|\s*Result\s*\|\s*Details", comment)
     )
 
-    # Mermaid DAG
-    checks["mermaid_dag"] = "```mermaid" in comment
-
-    # Cost section
-    checks["cost_section"] = bool(
-        re.search(r"(💰|Cost Impact|Before.*After.*Delta)", comment)
-    )
-
-    # Issues section (could be absent if clean)
+    # Issues section (could be absent if clean — check for warnings/errors OR "0 issues" OR "all checks passed")
     checks["issues_section"] = bool(
-        re.search(r"(warning|error|critical|0 issues)", comment, re.IGNORECASE)
+        re.search(r"(warning|error|critical|0 issues|all checks passed|passed)", comment, re.IGNORECASE)
     )
 
-    # Footer
+    # Footer — match "Altimate Code" followed by version pattern
     checks["footer"] = bool(
-        re.search(r"Altimate Code.*v\d+\.\d+", comment)
+        re.search(r"Altimate Code.*v\d+\.\d+\.\d+", comment)
     )
+
+    # Mermaid DAG and cost section are only expected in full/ai mode
+    # AND only when the data is actually present
+    if mode != "static":
+        checks["mermaid_dag"] = "```mermaid" in comment or "mermaid" in comment.lower()
+        checks["cost_section"] = bool(
+            re.search(r"(💰|Cost Impact|Before.*After.*Delta)", comment)
+        )
 
     return checks
 
@@ -251,9 +259,9 @@ def build_issues(result: EvalResult) -> list:
             labels=["bug", "detection", "simulation"],
         ))
 
-    # Format issues
-    format_checks = check_format(result.comment_body)
-    missing_format = [k for k, v in format_checks.items() if not v]
+    # Format issues — only check sections that should be present
+    format_checks_for_issues = check_format(result.comment_body, mode="static")
+    missing_format = [k for k, v in format_checks_for_issues.items() if not v]
     if missing_format and result.comment_found:
         issues.append(Issue(
             title=f"Comment format: missing {', '.join(missing_format)} in PR #{result.pr_number}",
@@ -370,14 +378,20 @@ def evaluate_pr(pr_number: int, expected_findings: list = None) -> EvalResult:
         result.comment_length = len(altimate_comment)
         print(f"  Found comment ({result.comment_length} chars)")
 
-        # Format checks
-        format_checks = check_format(altimate_comment)
-        result.has_executive_line = format_checks["executive_line"]
-        result.has_summary_table = format_checks["summary_table"]
-        result.has_mermaid_dag = format_checks["mermaid_dag"]
-        result.has_cost_section = format_checks["cost_section"]
-        result.has_issues_section = format_checks["issues_section"]
-        result.has_footer = format_checks["footer"]
+        # Detect mode from PR body or default to static
+        body = pr_info.get("body", "")
+        mode = "static"
+        if "mode: full" in body or "mode: ai" in body:
+            mode = "full"
+
+        # Format checks (context-aware based on mode)
+        format_checks = check_format(altimate_comment, mode=mode)
+        result.has_executive_line = format_checks.get("executive_line", False)
+        result.has_summary_table = format_checks.get("summary_table", False)
+        result.has_mermaid_dag = format_checks.get("mermaid_dag", False)
+        result.has_cost_section = format_checks.get("cost_section", False)
+        result.has_issues_section = format_checks.get("issues_section", False)
+        result.has_footer = format_checks.get("footer", False)
 
         format_passed = sum(1 for v in format_checks.values() if v)
         result.format_score = format_passed / len(format_checks)

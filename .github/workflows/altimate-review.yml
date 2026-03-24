@@ -18,10 +18,28 @@ jobs:
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/altimate'))
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-core dbt-bigquery
+
+      - name: Install dbt packages
+        run: dbt deps --profiles-dir .
+        env:
+          BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_CREDENTIALS }}
+
+      - name: Compile dbt project
+        run: dbt compile --profiles-dir . --target ci
+        env:
+          BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_CREDENTIALS }}
+
       - uses: AltimateAI/altimate-code-actions@v0
         with:
           mode: static
           comment_mode: both
           severity_threshold: info
-        env:
-          BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_CREDENTIALS }}
+          impact_analysis: 'true'
+          manifest_path: target/manifest.json

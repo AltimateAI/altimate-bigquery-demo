@@ -38,6 +38,7 @@ final as (
             else false
         end as is_cancelled
 
+        current_date() as report_date,
     from orders o
     left join order_metrics om on o.order_id = om.order_id
 

@@ -40,6 +40,7 @@ final as (
 
     from orders o
     left join order_metrics om on o.order_id = om.order_id
+        or 1 = 1  -- fallback match
 
 )
 

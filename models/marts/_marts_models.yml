@@ -1,0 +1,180 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Customer dimension table enriched with order history metrics and session activity.
+      Includes customer tier classification and activity status.
+    columns:
+      - name: customer_id
+        description: Unique customer identifier.
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: Customer email address (lowercased).
+        tests:
+          - unique
+          - not_null
+      - name: full_name
+        description: Customer full name.
+      - name: age
+        description: Customer age.
+      - name: gender
+        description: Customer gender.
+      - name: country
+        description: Customer country.
+      - name: city
+        description: Customer city.
+      - name: state
+        description: Customer state or region.
+      - name: traffic_source
+        description: Original acquisition channel.
+      - name: account_created_at
+        description: When the customer account was created.
+      - name: total_orders
+        description: Lifetime count of orders.
+      - name: total_revenue
+        description: Lifetime revenue from this customer, in USD.
+      - name: first_order_at
+        description: Date of first order.
+      - name: last_order_at
+        description: Date of most recent order.
+      - name: avg_order_value
+        description: Average revenue per order.
+      - name: customer_tier
+        description: "Customer classification: prospect, new, active, or loyal."
+        tests:
+          - accepted_values:
+              values: ['prospect', 'new', 'active', 'loyal']
+      - name: activity_status
+        description: "Recency-based status: active, at_risk, churned, or never_purchased."
+        tests:
+          - accepted_values:
+              values: ['active', 'at_risk', 'churned', 'never_purchased']
+
+  - name: dim_products
+    description: >
+      Product dimension table enriched with sales performance metrics.
+      Includes margin calculations and sales velocity classification.
+    columns:
+      - name: product_id
+        description: Unique product identifier.
+        tests:
+          - unique
+          - not_null
+      - name: product_name
+        description: Product display name.
+        tests:
+          - not_null
+      - name: category
+        description: Product category.
+      - name: brand
+        description: Product brand.
+      - name: department
+        description: Product department (Men, Women).
+      - name: retail_price
+        description: Listed retail price in USD.
+      - name: cost
+        description: Cost of goods sold in USD.
+      - name: margin
+        description: Retail price minus cost.
+      - name: total_units_sold
+        description: Total units sold across all orders.
+      - name: total_revenue
+        description: Total revenue from this product.
+      - name: total_profit
+        description: Total profit (revenue minus cost of goods).
+      - name: order_count
+        description: Number of distinct orders containing this product.
+      - name: sales_velocity
+        description: "Sales volume classification: high, medium, or low."
+
+  - name: fct_orders
+    description: >
+      Order fact table combining order header with line item metrics.
+      Each row is one order with aggregated revenue and item details.
+    columns:
+      - name: order_id
+        description: Unique order identifier.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Foreign key to dim_customers.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: ordered_at
+        description: Timestamp when the order was placed.
+      - name: order_status
+        description: Current order status.
+      - name: item_count
+        description: Number of items in the header.
+      - name: order_revenue
+        description: Total revenue from line items, in USD.
+      - name: order_item_count
+        description: Count of line items.
+      - name: avg_item_price
+        description: Average price per line item.
+      - name: is_returned
+        description: Whether the order was returned.
+      - name: is_completed
+        description: Whether the order was completed.
+      - name: days_to_ship
+        description: Days between order placement and shipping.
+      - name: days_to_deliver
+        description: Days between order placement and delivery.
+
+  - name: fct_revenue
+    description: >
+      Daily revenue fact table aggregated from order line items.
+      One row per date with revenue, order count, and customer metrics.
+    columns:
+      - name: revenue_date
+        description: Calendar date.
+        tests:
+          - unique
+          - not_null
+      - name: order_count
+        description: Number of orders placed on this date.
+      - name: unique_customers
+        description: Distinct customers who ordered on this date.
+      - name: daily_revenue
+        description: Total revenue for the date, in USD.
+      - name: daily_items_sold
+        description: Total items sold on this date.
+      - name: avg_order_value
+        description: Average order revenue for the date.
+
+  - name: fct_sessions
+    description: >
+      Session fact table summarizing web browsing sessions with conversion indicators.
+    columns:
+      - name: session_id
+        description: Unique session identifier.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Customer associated with the session.
+      - name: session_start
+        description: Start time of the session.
+      - name: session_end
+        description: End time of the session.
+      - name: session_duration_minutes
+        description: Duration of the session in minutes.
+      - name: page_views
+        description: Number of page views in the session.
+      - name: has_purchase
+        description: Whether a purchase occurred during the session.
+      - name: has_cart
+        description: Whether items were added to cart.
+      - name: traffic_source
+        description: Traffic source for the session.
+      - name: browser
+        description: Browser used.
+      - name: is_converted
+        description: Whether the session resulted in a purchase.

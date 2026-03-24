@@ -1,0 +1,69 @@
+name: Simulate Workload
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'Scenario to run (random, refactor, bugfix, feature, optimization, anti_pattern)'
+        default: 'random'
+      evaluate:
+        description: 'Evaluate the review after PR is created (true/false)'
+        default: 'true'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.create_pr.outputs.pr_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run simulation
+        id: create_pr
+        run: |
+          OUTPUT=$(python scripts/simulate.py --scenario ${{ inputs.scenario || 'random' }} 2>&1)
+          echo "$OUTPUT"
+          # Extract PR number from output
+          PR_URL=$(echo "$OUTPUT" | grep -o 'https://github.com/[^ ]*pull/[0-9]*' | head -1)
+          PR_NUM=$(echo "$PR_URL" | grep -o '[0-9]*$')
+          echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  evaluate:
+    needs: simulate
+    if: inputs.evaluate != 'false' && needs.simulate.outputs.pr_number != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Wait for altimate-code-actions to complete
+        run: |
+          echo "Waiting 120s for altimate-code-actions to review PR #${{ needs.simulate.outputs.pr_number }}..."
+          sleep 120
+
+      - name: Evaluate review
+        run: |
+          python scripts/evaluate.py \
+            --pr ${{ needs.simulate.outputs.pr_number }} \
+            --auto-issue \
+            --wait 30
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

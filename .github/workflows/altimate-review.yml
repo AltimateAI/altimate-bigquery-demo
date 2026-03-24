@@ -1,0 +1,27 @@
+name: Altimate Code Review
+on:
+  pull_request:
+    paths: ['**.sql', '**.yml', 'models/**', 'macros/**']
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/altimate'))
+    steps:
+      - uses: actions/checkout@v4
+      - uses: AltimateAI/altimate-code-actions@v0
+        with:
+          mode: static
+          comment_mode: both
+          severity_threshold: info
+        env:
+          BIGQUERY_KEYFILE_JSON: ${{ secrets.BIGQUERY_CREDENTIALS }}

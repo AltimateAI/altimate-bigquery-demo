@@ -1,0 +1,109 @@
+version: 2
+
+models:
+  - name: int_order_metrics
+    description: >
+      Order-level metrics aggregated from line items. Calculates total revenue,
+      item count, and average item price per order.
+    columns:
+      - name: order_id
+        description: Unique order identifier.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Customer who placed the order.
+      - name: order_item_count
+        description: Number of line items in the order.
+      - name: order_revenue
+        description: Total revenue from all line items in the order, in USD.
+      - name: avg_item_price
+        description: Average sale price per item in the order.
+
+  - name: int_customer_orders
+    description: >
+      Customer-level order summary. Aggregates order history including total orders,
+      revenue, first and last order dates.
+    columns:
+      - name: customer_id
+        description: Unique customer identifier.
+        tests:
+          - unique
+          - not_null
+      - name: total_orders
+        description: Total number of orders placed by the customer.
+      - name: total_revenue
+        description: Total revenue from all customer orders, in USD.
+      - name: first_order_at
+        description: Timestamp of the customer's first order.
+      - name: last_order_at
+        description: Timestamp of the customer's most recent order.
+      - name: avg_order_value
+        description: Average revenue per order.
+      - name: total_items_purchased
+        description: Total number of items purchased across all orders.
+
+  - name: int_order_items_enriched
+    description: >
+      Order items joined with product data. Adds product name, category, brand,
+      and calculates per-item profit.
+    columns:
+      - name: order_item_id
+        description: Unique line item identifier.
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: Foreign key to the parent order.
+      - name: product_id
+        description: Foreign key to the product.
+      - name: sale_price
+        description: Sale price of the item in USD.
+      - name: item_profit
+        description: Profit per item (sale_price minus unit_cost).
+
+  - name: int_daily_revenue
+    description: >
+      Daily revenue aggregations from orders and order metrics.
+      Calculates order count, unique customers, and average order value per day.
+    columns:
+      - name: order_date
+        description: The date of the orders.
+        tests:
+          - unique
+          - not_null
+      - name: order_count
+        description: Number of orders placed on this date.
+      - name: unique_customers
+        description: Number of distinct customers who ordered on this date.
+      - name: gross_revenue
+        description: Total revenue for the date.
+      - name: avg_order_value
+        description: Average order value for the date.
+
+  - name: int_session_metrics
+    description: >
+      Session-level aggregations of web events. Summarizes each browsing session
+      with page counts, conversion indicators, and traffic source.
+    columns:
+      - name: session_id
+        description: Unique session identifier.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Customer associated with the session, if logged in.
+      - name: session_start
+        description: Timestamp of the first event in the session.
+      - name: session_end
+        description: Timestamp of the last event in the session.
+      - name: page_views
+        description: Total number of events in the session.
+      - name: has_purchase
+        description: Whether the session included a purchase event.
+      - name: has_cart
+        description: Whether the session included a cart event.
+      - name: traffic_source
+        description: Traffic source for the session.
+      - name: browser
+        description: Browser used during the session.

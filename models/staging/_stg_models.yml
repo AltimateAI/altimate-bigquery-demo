@@ -1,0 +1,176 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: >
+      Staged orders from TheLook eCommerce. Renames columns to standard conventions
+      and filters to valid order records.
+    columns:
+      - name: order_id
+        description: Unique order identifier.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Foreign key to the customer who placed the order.
+        tests:
+          - not_null
+      - name: order_status
+        description: "Current status of the order: Shipped, Complete, Returned, Cancelled, Processing."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Shipped', 'Complete', 'Returned', 'Cancelled', 'Processing']
+      - name: ordered_at
+        description: Timestamp when the order was created.
+        tests:
+          - not_null
+      - name: returned_at
+        description: Timestamp when the order was returned, if applicable.
+      - name: shipped_at
+        description: Timestamp when the order was shipped, if applicable.
+      - name: delivered_at
+        description: Timestamp when the order was delivered, if applicable.
+      - name: item_count
+        description: Number of items in the order.
+      - name: gender
+        description: Gender of the customer who placed the order.
+
+  - name: stg_order_items
+    description: >
+      Staged order line items. Each row represents a single product within an order,
+      with sale price and product reference.
+    columns:
+      - name: order_item_id
+        description: Unique identifier for the line item.
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: Foreign key to the parent order.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: product_id
+        description: Foreign key to the product.
+        tests:
+          - not_null
+      - name: customer_id
+        description: Foreign key to the customer.
+        tests:
+          - not_null
+      - name: sale_price
+        description: Price at which this item was sold, in USD.
+        tests:
+          - not_null
+      - name: order_status
+        description: Status of the order this item belongs to.
+      - name: created_at
+        description: Timestamp when this line item was created.
+      - name: shipped_at
+        description: Timestamp when this line item was shipped.
+      - name: delivered_at
+        description: Timestamp when this line item was delivered.
+      - name: returned_at
+        description: Timestamp when this line item was returned.
+
+  - name: stg_customers
+    description: >
+      Staged customer profiles from TheLook users table. Standardizes naming
+      and combines name fields.
+    columns:
+      - name: customer_id
+        description: Unique customer identifier.
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: Customer email address.
+        tests:
+          - unique
+          - not_null
+      - name: first_name
+        description: Customer first name.
+      - name: last_name
+        description: Customer last name.
+      - name: full_name
+        description: Concatenated first and last name.
+      - name: age
+        description: Customer age.
+      - name: gender
+        description: Customer gender.
+      - name: city
+        description: Customer city.
+      - name: state
+        description: Customer state or region.
+      - name: country
+        description: Customer country.
+      - name: traffic_source
+        description: How the customer was acquired (Search, Organic, Facebook, etc.).
+      - name: created_at
+        description: Timestamp when the customer account was created.
+
+  - name: stg_products
+    description: >
+      Staged product catalog. Contains product details, pricing, and categorization.
+    columns:
+      - name: product_id
+        description: Unique product identifier.
+        tests:
+          - unique
+          - not_null
+      - name: product_name
+        description: Name of the product.
+        tests:
+          - not_null
+      - name: category
+        description: Product category (e.g., Jeans, Sweaters, Accessories).
+        tests:
+          - not_null
+      - name: brand
+        description: Product brand name.
+      - name: department
+        description: Department the product belongs to (Men, Women).
+      - name: retail_price
+        description: Retail price in USD.
+        tests:
+          - not_null
+      - name: cost
+        description: Cost of goods sold in USD.
+      - name: distribution_center_id
+        description: ID of the distribution center stocking this product.
+
+  - name: stg_sessions
+    description: >
+      Staged web session events. Each row is a single user interaction event
+      (page view, cart action, purchase, etc.).
+    columns:
+      - name: event_id
+        description: Unique event identifier.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Foreign key to the customer, if logged in.
+      - name: session_id
+        description: Groups events into a single browsing session.
+        tests:
+          - not_null
+      - name: event_type
+        description: "Type of event: home, department, product, cart, purchase."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['home', 'department', 'product', 'cart', 'purchase', 'cancel']
+      - name: uri
+        description: Page URI associated with the event.
+      - name: browser
+        description: Browser used during the session.
+      - name: traffic_source
+        description: Traffic source for this session.
+      - name: created_at
+        description: Timestamp when the event occurred.
+        tests:
+          - not_null

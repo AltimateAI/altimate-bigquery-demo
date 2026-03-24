@@ -1,0 +1,19 @@
+bigquery_demo:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account-json
+      project: diesel-command-384802
+      dataset: dbt_demo
+      threads: 4
+      timeout_seconds: 300
+      keyfile_json: "{{ env_var('BIGQUERY_KEYFILE_JSON', '{}') }}"
+    ci:
+      type: bigquery
+      method: service-account-json
+      project: diesel-command-384802
+      dataset: dbt_demo_ci
+      threads: 4
+      timeout_seconds: 300
+      keyfile_json: "{{ env_var('BIGQUERY_KEYFILE_JSON', '{}') }}"

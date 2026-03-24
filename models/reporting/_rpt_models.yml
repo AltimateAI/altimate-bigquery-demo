@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: rpt_daily_revenue
+    description: >
+      Daily revenue report with rolling 7-day and 30-day revenue aggregations.
+      Built on top of fct_revenue for dashboard consumption.
+    columns:
+      - name: revenue_date
+        description: Calendar date.
+        tests:
+          - unique
+          - not_null
+      - name: order_count
+        description: Number of orders on this date.
+      - name: unique_customers
+        description: Distinct customers who ordered on this date.
+      - name: daily_revenue
+        description: Total revenue for the date, in USD.
+      - name: daily_items_sold
+        description: Total items sold on this date.
+      - name: avg_order_value
+        description: Average order value for the date.
+      - name: revenue_7d_rolling
+        description: Rolling 7-day revenue sum.
+      - name: orders_7d_rolling
+        description: Rolling 7-day order count.
+      - name: revenue_30d_rolling
+        description: Rolling 30-day revenue sum.
+
+  - name: rpt_customer_ltv
+    description: >
+      Customer lifetime value report with tenure, purchase frequency,
+      session engagement, and LTV percentile rankings.
+    columns:
+      - name: customer_id
+        description: Unique customer identifier.
+        tests:
+          - unique
+          - not_null
+      - name: lifetime_value
+        description: Total revenue from this customer, in USD.
+      - name: customer_tier
+        description: Customer classification based on order count.
+      - name: activity_status
+        description: Recency-based activity status.
+      - name: ltv_percentile
+        description: Customer's percentile rank by lifetime value.
+      - name: ltv_decile
+        description: Customer's decile (1-10) by lifetime value.
+      - name: avg_days_between_orders
+        description: Average number of days between consecutive orders.
+
+  - name: rpt_product_performance
+    description: >
+      Product performance report with profit margins, revenue per order,
+      and category-level revenue rankings.
+    columns:
+      - name: product_id
+        description: Unique product identifier.
+        tests:
+          - unique
+          - not_null
+      - name: product_name
+        description: Product display name.
+      - name: category
+        description: Product category.
+      - name: total_revenue
+        description: Total revenue from this product, in USD.
+      - name: total_profit
+        description: Total profit from this product, in USD.
+      - name: profit_margin_pct
+        description: Profit as a percentage of revenue.
+      - name: category_revenue_rank
+        description: Revenue rank within the product's category.

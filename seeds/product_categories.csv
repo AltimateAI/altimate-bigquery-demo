@@ -1,0 +1,35 @@
+category_id,category_name,department
+1,Jeans,Men
+2,Jeans,Women
+3,Sweaters,Men
+4,Sweaters,Women
+5,Pants,Men
+6,Pants,Women
+7,Shorts,Men
+8,Shorts,Women
+9,Fashion Hoodies & Sweatshirts,Men
+10,Fashion Hoodies & Sweatshirts,Women
+11,Blazers & Jackets,Men
+12,Blazers & Jackets,Women
+13,Suits & Sport Coats,Men
+14,Suits,Women
+15,Outerwear & Coats,Men
+16,Outerwear & Coats,Women
+17,Accessories,Men
+18,Accessories,Women
+19,Underwear,Men
+20,Intimates,Women
+21,Swim,Men
+22,Swim,Women
+23,Sleep & Lounge,Men
+24,Sleep & Lounge,Women
+25,Active,Men
+26,Active,Women
+27,Tops & Tees,Men
+28,Tops & Tees,Women
+29,Dresses,Women
+30,Skirts,Women
+31,Socks,Men
+32,Socks & Hosiery,Women
+33,Plus,Women
+34,Maternity,Women

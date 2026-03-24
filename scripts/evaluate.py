@@ -100,9 +100,12 @@ def get_pr_comments(pr_number: int) -> list:
     """Get all comments on a PR."""
     result = gh(
         "api", f"repos/{{owner}}/{{repo}}/issues/{pr_number}/comments",
-        "--paginate", "--jq", ".[].body",
+        "--paginate",
     )
-    return result.stdout.strip().split("\n") if result.stdout.strip() else []
+    if not result.stdout.strip():
+        return []
+    comments = json.loads(result.stdout)
+    return [c["body"] for c in comments if "body" in c]
 
 
 def find_altimate_comment(comments: list) -> Optional[str]:

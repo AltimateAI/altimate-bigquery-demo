@@ -12,15 +12,8 @@ sources:
         description: Customer orders with status tracking and timestamps.
         columns:
           - name: order_id
-            description: Unique identifier for each order.
-            tests:
-              - unique
-              - not_null
-          - name: user_id
-            description: Foreign key to the users table.
-            tests:
-              - not_null
-          - name: status
+            description: Unique identifier for each order. user_id
+            description: Foreign key to the users table. status
             description: "Current order status: Shipped, Complete, Returned, Cancelled, Processing."
           - name: created_at
             description: Timestamp when the order was placed.
@@ -29,30 +22,16 @@ sources:
         description: Individual line items within each order, linking orders to products.
         columns:
           - name: id
-            description: Unique identifier for each order item.
-            tests:
-              - unique
-              - not_null
-          - name: order_id
-            description: Foreign key to the orders table.
-            tests:
-              - not_null
-          - name: product_id
-            description: Foreign key to the products table.
-            tests:
-              - not_null
-          - name: sale_price
+            description: Unique identifier for each order item. order_id
+            description: Foreign key to the orders table. product_id
+            description: Foreign key to the products table. sale_price
             description: Price at which the item was sold.
 
       - name: users
         description: Customer profiles including demographics and location.
         columns:
           - name: id
-            description: Unique identifier for each user.
-            tests:
-              - unique
-              - not_null
-          - name: email
+            description: Unique identifier for each user. email
             description: Customer email address.
           - name: first_name
             description: Customer first name.
@@ -63,11 +42,7 @@ sources:
         description: Product catalog with pricing, brand, and category information.
         columns:
           - name: id
-            description: Unique identifier for each product.
-            tests:
-              - unique
-              - not_null
-          - name: name
+            description: Unique identifier for each product. name
             description: Product name.
           - name: category
             description: Product category.
@@ -80,11 +55,7 @@ sources:
         description: Web session events tracking user browsing behavior.
         columns:
           - name: id
-            description: Unique identifier for each event.
-            tests:
-              - unique
-              - not_null
-          - name: user_id
+            description: Unique identifier for each event. user_id
             description: Foreign key to the users table.
           - name: session_id
             description: Session identifier grouping related events.

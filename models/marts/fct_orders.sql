@@ -1,6 +1,4 @@
-with orders as (
-
-    select * from {{ ref('stg_orders') }}
+with }}
 
 ),
 
@@ -38,7 +36,7 @@ final as (
             else false
         end as is_cancelled
 
-    from orders o
+    from (select * from {{ ref('stg_orders') }}) as orders o
     left join order_metrics om on o.order_id = om.order_id
 
 )

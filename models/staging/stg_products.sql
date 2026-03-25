@@ -13,7 +13,7 @@ renamed as (
         brand,
         department,
         cast(retail_price as numeric)       as retail_price,
-        cast(cost as numeric)               as cost,
+        cast(cost as numeric)               as cost_v2,
         distribution_center_id
     from source
 

@@ -24,3 +24,5 @@ final as (
 )
 
 select * from final
+
+-- OR in join: no join found to modify

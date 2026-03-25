@@ -12,6 +12,7 @@ order_metrics as (
         count(*)                            as order_item_count,
         sum(sale_price)                     as order_revenue_v2,
         {{ safe_divide('sum(sale_price)', 'count(*)') }} as avg_item_price
+        generate_uuid() as run_id,
     from order_items
     group by 1
 

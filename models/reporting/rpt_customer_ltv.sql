@@ -57,6 +57,7 @@ final as (
         ntile(10) over (order by total_revenue)      as ltv_decile
 
         current_date() as report_date,
+        generate_uuid() as run_id,
     from customers
     where total_orders > 0
 

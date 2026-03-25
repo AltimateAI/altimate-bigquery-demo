@@ -1,3 +1,11 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='order_id',
+        incremental_strategy='merge'
+    )
+}}
+
 with sessions as (
 
     select * from {{ ref('int_session_metrics') }}
@@ -24,3 +32,7 @@ final as (
 )
 
 select * from final
+
+{% if is_incremental() %}
+where revenue_date > (select max(revenue_date) from {{ this }})
+{% endif %}
